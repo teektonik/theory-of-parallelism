@@ -9,35 +9,33 @@
 
 
 int main() {
-	
 
-	float* arr0 = (float*)malloc(sizeof(float)*n);
-	double* arr1 = (double*)malloc(sizeof(double)*n);
-	float a0 = (2 * pi) / (n - 1);
-	double a1 = (2 * pi) / (n - 1);
-	
-	float s0 = 0;
-	double s1 = 0;
-	
-	#pragma acc kernels
-	for (int i = 0; i < n; i++) {
-		arr0[i] = sin(s0);
-		arr1[i] = sin(s1);
-		s0 += a0;
-		s1 += a1;
 
-	}
-	
-	float sum0 = 0;
-	double sum1 = 0;
-	#pragma acc kernels
-	for (int i = 0; i < n; i++) {
-		sum0 += arr0[i];
-		sum1 += arr1[i];
-	}
-	printf("%f %lf", sum0, sum1);
+    double* arr0 = (double*)malloc(sizeof(double) * n);
 
-	return 0;
+    double a0 = (2 * pi) / (n - 1);
+
+    double sum0 = 0;
+
+#pragma acc data create(arr0[:n])
+    {
+#pragma acc parallel loop vector vector_length(32) gang
+        for (int i = 0; i < n; i++) {
+            arr0[i] = sin(a0 * i);
+
+        }
+
+
+
+#pragma acc parallel loop reduction(+:sum0)
+        for (int i = 0; i < n; i++) {
+            sum0 += arr0[i];
+
+        }
+    }
+    printf("%-32.25f\n", sum0);
+
+    return 0;
 
 
 
