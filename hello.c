@@ -9,7 +9,8 @@
 
 
 int main() {
-
+    clock_t start, end;
+    start = clock();
 
     double* arr0 = (double*)malloc(sizeof(double) * n);
 
@@ -34,7 +35,9 @@ int main() {
         }
     }
     printf("%-32.25f\n", sum0);
+    end = clock();
 
+    printf("%.4f second(s)\n", ((float)end - start) / ((float)CLOCKS_PER_SEC));
     return 0;
 
 
