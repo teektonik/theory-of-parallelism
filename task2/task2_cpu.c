@@ -45,8 +45,6 @@ int main(int argc, char** argv) {
 
     for (iter = 0; iter < iter_max && err>accuracy; iter++) {
         err = 0;
-
-
         for (int j = 1; j < n - 1; j++) {
             for (int i = 1; i < n - 1; i++) {
                 anew[i + j * n] = 0.25 * (A[i + j * n - n] + A[i + j * n + n] + A[i + j * n - 1] + A[i + j * n + 1]);
