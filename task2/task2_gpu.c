@@ -47,17 +47,31 @@ int main(int argc, char** argv) {
 
 
 
+#pragma acc enter data copyin(anew[0:(n*n)], A[0:(n*n)], err)
         for (iter = 0; iter < iter_max && err>accuracy; iter++) {
-                err = 0;
 
-                #pragma acc parallel loop seq vector vector_length(256) gang num_gangs(256)  copy(err)
+                if (iter%100==0){
+                #pragma acc kernels async(1)
+                        err = 0;
+                #pragma acc update device (err)
+                }
+                #pragma acc data present(A, anew, err)
+                #pragma acc parallel loop vector vector_length(256) gang num_gangs(256) reduction(max:err) async(1)
                 for (int j = 1; j < n - 1; j++) {
+
                         for (int i = 1; i < n - 1; i++) {
                                 anew[i+j*n] = 0.25 * (A[i + j * n -n] + A[i + j * n+n] + A[i + j * n -1] + A[i + j * n +1]);
                                 err = fmax(err, anew[i + j * n] - A[i + j * n]);
+
                                 }
                         }
-                        memcpy(A, anew, sizeof(A));
+if (iter%100==0){
+#pragma acc update host (err) async(1)
+#pragma acc wait(1)
+}
+                double* tmp = A;
+                A = anew;
+                anew = tmp;
                 }
         printf("%d\n%lf", iter, err);
 
