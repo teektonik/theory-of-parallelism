@@ -46,17 +46,13 @@ int main(int argc, char** argv) {
 
 	int iter = 0;
 	int N=n*n;
-//	const double alpha = -1;
-//	int idx = 0;
-	memcpy(anew, A, n * n * sizeof(double));
+
 	#pragma acc enter data copyin(A[0:N], anew[0:N])
 	{
-	//	const double alpha = -1;
-	//	                         int idx = 0;
+		const double alpha = -1;
+		                         int idx = 0;
 			
-	for (iter = 0; iter < iter_max && err>accuracy; iter++) {
-	 const double alpha = -1;
-         int idx = 0;	 
+	for (iter = 0; iter < iter_max && err>accuracy; iter++) { 
 	#pragma acc data present(A, anew)		
 	#pragma acc parallel loop independent collapse(2) vector vector_length(256) gang num_gangs(128) async
 			for (int j = 1; j < n - 1; j++) {
@@ -86,8 +82,8 @@ int main(int argc, char** argv) {
 		anew = tmp;
 	}
 	}
-	// free(A);
-	//
+	free(A);
+	free(anew);
 	cublasDestroy(handler);
 	printf("%d\n%lf", iter, err);
 
