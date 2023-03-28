@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 	double* anew = (double*)calloc(n * n, sizeof(double));
 
      	cublasHandle_t handler;
-	cublasStatus_t status = cublasCreate(&handler);
+	cublasCreate(&handler);
 	A[0] = 10;
 	A[0 + n - 1] = 20;
 	A[0 + n * (n - 1)] = 20;
