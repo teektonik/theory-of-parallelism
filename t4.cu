@@ -1,3 +1,4 @@
+//include libries
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -7,24 +8,24 @@
 #include <cub/cub.cuh>
 
 
-
+//calculate error
 __global__ void error(double * A1, double *anew1 , double * res, int n){
 
-     	int idx = blockIdx.x*blockDim.x + threadIdx.x;
+     	int idx = blockIdx.x*blockDim.x + threadIdx.x; //find index
 	if(idx<n*n){
 		res[idx] = fabs(anew1[idx]-A1[idx]);
 	}
 }
-
+//calculate new value of an array cell 
 __global__ void compute(double * A1, double * anew1,int n){
-	int j = blockIdx.x;						          
+	int j = blockIdx.x;// find index						          
 	int i = threadIdx.x;
 	if((j>0) && (j<n-1) && (i>0) && (i<n-1))
 		anew1[i + j * n] = 0.25 * (A1[i + j * n - n] + A1[i + j * n + n] + A1[i + j * n - 1] + A1[i + j * n + 1]);
 }
 
 int main(int argc, char** argv) {
-
+	//parametrs from command line
 	int iter_max;
 	int sizeofnet1;
 	double accuracy;
@@ -34,12 +35,12 @@ int main(int argc, char** argv) {
 	int n = sizeofnet1;
 	iter_max = atoi(argv[3]);
 
-
+	//allocate memory for arrays
 	double* A = (double*)calloc(n * n, sizeof(double));
 	double* anew = (double*)calloc(n * n, sizeof(double));
 
 
-
+	//calculate boundary conditions
 	A[0] = 10;
 	A[0 + n - 1] = 20;
 	A[0 + n * (n - 1)] = 20;
@@ -68,29 +69,38 @@ int main(int argc, char** argv) {
 	double* tmp_arr = NULL;
 	double err = 100;
 	double* err1 = 0;
-	
+	//allocate array with cuda function
 	cudaMalloc((&err1), sizeof(double));
 	cudaMalloc((&A1), sizeof(double) * (n * n));
 	cudaMalloc((&anew1), sizeof(double) * (n*n));
 	cudaMalloc((&tmp_arr), sizeof(double) *( n * n));
+	//move arrays with boundary conditions to cuda arrays
 	cudaMemcpy(A1, A, sizeof(double) * (n * n), cudaMemcpyHostToDevice);
 	cudaMemcpy(anew1, anew, sizeof(double) * (n * n), cudaMemcpyHostToDevice);
 	
+	//calculate size of memory
 	cub::DeviceReduce::Max(t_memory, t_memory_size, tmp_arr, err1, n*n);
-   	 cudaMalloc((&t_memory), t_memory_size);	
+   	 cudaMalloc((&t_memory), t_memory_size);
+	
+	//main algorithm
 	for (iter = 0; iter < iter_max && err>accuracy; iter++) {
+		// n-1 - size of net and threads
 		compute<<<n-1, n-1>>>(A1, anew1, n);
-
+		//every 100 iterations calculate error
 		if (iter%100==0){
 			error<<<n-1, n-1>>>(A1, anew1, tmp_arr, n);
 			cub::DeviceReduce::Max(t_memory, t_memory_size, tmp_arr, err1, n*n);
+			//move answer to CPU
 			cudaMemcpy(&err, err1, sizeof(double), cudaMemcpyDeviceToHost);
 		}
+		//change arrays
 		double* tmp = A1;
 		A1 = anew1;
 		anew1 = tmp;
 	}
+	//print answer
 	printf("%d\n%lf", iter, err);
+	//free memory
 	cudaFree(err1);
 	cudaFree(t_memory);
 	cudaFree(A1);
