@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 	sizeofnet1 = atoi(argv[2]);
 	int n = sizeofnet1;
 	iter_max = atoi(argv[3]);
-
+	//добавить проверку
 	//allocate memory for arrays
 	double* A = (double*)calloc(n * n, sizeof(double));
 	double* anew = (double*)calloc(n * n, sizeof(double));
@@ -79,13 +79,13 @@ int main(int argc, char** argv) {
 	cudaMemcpy(anew1, anew, sizeof(double) * (n * n), cudaMemcpyHostToDevice);
 	
 	//calculate size of memory
-	cub::DeviceReduce::Max(t_memory, t_memory_size, tmp_arr, err1, n*n);
+	cub::DeviceReduce::Max(t_memory, t_memory_size, tmp_arr, err1, n*n);// почему мы узнаем размер массива здесь, а ниже нет
    	 cudaMalloc((&t_memory), t_memory_size);
 	
 	//main algorithm
 	for (iter = 0; iter < iter_max && err>accuracy; iter++) {
 		// n-1 - size of net and threads
-		compute<<<n-1, n-1>>>(A1, anew1, n);
+		compute<<<n-1, n-1>>>(A1, anew1, n); // получать значения размера потоков и блоков во время выполнения программы (зависит от размера сетки)
 		//every 100 iterations calculate error
 		if (iter%100==0){
 			error<<<n-1, n-1>>>(A1, anew1, tmp_arr, n);
