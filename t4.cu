@@ -29,12 +29,25 @@ int main(int argc, char** argv) {
 	int iter_max;
 	int sizeofnet1;
 	double accuracy;
-
+	
+	int blockSize;      // The launch configurator returned block size 
+    	int minGridSize;    // The minimum grid size needed to achieve the maximum occupancy for a full device launch 
+    	int gridSize;       // The actual grid size needed, based on input size
+	
+	if (argc<4){
+		printf("not enough arguments");
+		return 0;
+	}
 	accuracy = atof(argv[1]);
 	sizeofnet1 = atoi(argv[2]);
 	int n = sizeofnet1;
 	iter_max = atoi(argv[3]);
-	//добавить проверку
+	//check
+	if (n>1024 || accuracy<0 || n<0 || iter_max<0){
+		printf("wrong arguments");
+		return 0;
+	}
+	
 	//allocate memory for arrays
 	double* A = (double*)calloc(n * n, sizeof(double));
 	double* anew = (double*)calloc(n * n, sizeof(double));
@@ -78,17 +91,19 @@ int main(int argc, char** argv) {
 	cudaMemcpy(A1, A, sizeof(double) * (n * n), cudaMemcpyHostToDevice);
 	cudaMemcpy(anew1, anew, sizeof(double) * (n * n), cudaMemcpyHostToDevice);
 	
+	cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, error, 0, n*n);
+	gridSize = (n*n + blockSize - 1) / blockSize; 
 	//calculate size of memory
-	cub::DeviceReduce::Max(t_memory, t_memory_size, tmp_arr, err1, n*n);// почему мы узнаем размер массива здесь, а ниже нет
+	cub::DeviceReduce::Max(t_memory, t_memory_size, tmp_arr, err1, n*n);// t_memory = NULL, при первом вызове возвращает нужный размер, нужно выделить память, чтобы функция работала
    	 cudaMalloc((&t_memory), t_memory_size);
 	
 	//main algorithm
 	for (iter = 0; iter < iter_max && err>accuracy; iter++) {
 		// n-1 - size of net and threads
-		compute<<<n-1, n-1>>>(A1, anew1, n); // получать значения размера потоков и блоков во время выполнения программы (зависит от размера сетки)
+		compute<<<gridSize, blockSize>>>(A1, anew1, n); // получать значения размера потоков и блоков во время выполнения программы (зависит от размера сетки)
 		//every 100 iterations calculate error
 		if (iter%100==0){
-			error<<<n-1, n-1>>>(A1, anew1, tmp_arr, n);
+			error<<<gridSize, blockSize>>>(A1, anew1, tmp_arr, n);
 			cub::DeviceReduce::Max(t_memory, t_memory_size, tmp_arr, err1, n*n);
 			//move answer to CPU
 			cudaMemcpy(&err, err1, sizeof(double), cudaMemcpyDeviceToHost);
