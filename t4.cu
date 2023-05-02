@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 	int n = sizeofnet1;
 	iter_max = atoi(argv[3]);
 	//check
-	if (n>1024 || accuracy<0 || n<0 || iter_max<0){
+	if ( accuracy<0 || n<0 || iter_max<0){
 		printf("wrong arguments");
 		return 0;
 	}
