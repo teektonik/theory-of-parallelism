@@ -33,7 +33,9 @@ int main(int argc, char** argv) {
 	int blockSize;      // The launch configurator returned block size 
     	int minGridSize;    // The minimum grid size needed to achieve the maximum occupancy for a full device launch 
     	int gridSize;       // The actual grid size needed, based on input size
-	
+	int blockSize1;      // The launch configurator returned block size 
+    	int minGridSize1;    // The minimum grid size needed to achieve the maximum occupancy for a full device launch 
+    	int gridSize1;       // The actual grid size needed, based on input size
 	if (argc<4){
 		printf("not enough arguments");
 		return 0;
@@ -92,18 +94,22 @@ int main(int argc, char** argv) {
 	cudaMemcpy(anew1, anew, sizeof(double) * (n * n), cudaMemcpyHostToDevice);
 	
 	cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, error, 0, n*n);
+	cudaOccupancyMaxPotentialBlockSize(&minGridSize1, &blockSize1, compute, 0, n*n);
 	gridSize = (n*n + blockSize - 1) / blockSize; 
+	gridSize1 = (n*n + blockSize1 - 1) / blockSize1;
+	printf("%d %d\n", gridSize, blockSize);
+	printf("%d %d\n", gridSize1, blockSize1);
 	//calculate size of memory
 	cub::DeviceReduce::Max(t_memory, t_memory_size, tmp_arr, err1, n*n);// t_memory = NULL, при первом вызове возвращает нужный размер, нужно выделить память, чтобы функция работала
    	 cudaMalloc((&t_memory), t_memory_size);
 	
 	//main algorithm
 	for (iter = 0; iter < iter_max && err>accuracy; iter++) {
-		// n-1 - size of net and threads
+		
 		compute<<<gridSize, blockSize>>>(A1, anew1, n); // получать значения размера потоков и блоков во время выполнения программы (зависит от размера сетки)
 		//every 100 iterations calculate error
 		if (iter%100==0){
-			error<<<gridSize, blockSize>>>(A1, anew1, tmp_arr, n);
+			error<<<gridSize1, blockSize1>>>(A1, anew1, tmp_arr, n);
 			cub::DeviceReduce::Max(t_memory, t_memory_size, tmp_arr, err1, n*n);
 			//move answer to CPU
 			cudaMemcpy(&err, err1, sizeof(double), cudaMemcpyDeviceToHost);
