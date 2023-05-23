@@ -125,8 +125,8 @@ int main(int argc, char** argv) {
 	double err = 100;
 	double* err1 = 0;
 
-	// Расчитываем, сколько памяти требуется процессу
-    	//необходимо знать границы предыдущего и следующего блоков, так как вычисления, по сути, идут крестиком.
+	// расчитываем, сколько памяти требуется процессу
+    	//нужно знать границы предыдущего и следующего блоков
 	if (rank != 0 && rank != size_group - 1)
 	{
 		sizeofArrayProcces += 2;
@@ -142,14 +142,14 @@ int main(int argc, char** argv) {
 	cudaMalloc((&anew1), sizeof(double) * sizeofArrayProcces * n);
 	cudaMalloc((&tmp_arr), sizeof(double) * sizeofArrayProcces * n);
 
-	// Копируем часть заполненной матрицы в выделенную память, начиная с 1 строки
+	// копируем часть заполненной матрицы в выделенную память, начиная с 1 строки
 	int move;
 	if (rank==0)
 		move = 0;
 	else
 		move = n;
 
-	//Если процесс не первый, то нам нужно вести расчеты вместе с предыдущей строкой
+	//если процесс не первый, то нам нужно вести расчеты вместе с предыдущей строкой
 	cudaMemcpy(A1, A + (start_cell*n) - move, sizeof(double) * sizeofArrayProcces * n, cudaMemcpyHostToDevice);
 	cudaMemcpy(anew1, anew + (start_cell*n) - move, sizeof(double) * sizeofArrayProcces * n, cudaMemcpyHostToDevice);
 
@@ -181,19 +181,18 @@ int main(int argc, char** argv) {
 			error<<<gridDim, blockDim, 0, matrixCalculationStream>>>(A1, anew1, tmp_arr, n, sizeofArrayProcces);
 			cub::DeviceReduce::Max(t_memory, t_memory_size, tmp_arr, err1, n*sizeofArrayProcces, matrixCalculationStream);
 			cudaStreamSynchronize(matrixCalculationStream);
-			// Находим максимальную ошибку среди всех и передаём её всем процессам
+			// находим максимальную ошибку среди всех и передаём её всем процессам
 			MPI_Allreduce((void*)err1, (void*)err1, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-			//чтобы начать передавать в новом потоке
 			cudaMemcpyAsync(&err, err1, sizeof(double), cudaMemcpyDeviceToHost, matrixCalculationStream);
 		}
-		// Обмен "граничными" условиями каждой области
-		// Обмен верхней границей
+		
+		//обмен верхней границей
 		if (rank != 0)
 		{
 		    MPI_Sendrecv(anew1 + n + 1, n - 2, MPI_DOUBLE, rank - 1, 0, 
 			anew1 + 1, n - 2, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		}
-		// Обмен нижней границей
+		// обмен нижней границей
 		if (rank != size_group - 1)
 		{
 		   MPI_Sendrecv(anew1 + (sizeofArrayProcces - 2) * n + 1, n - 2, MPI_DOUBLE, rank + 1, 0,
