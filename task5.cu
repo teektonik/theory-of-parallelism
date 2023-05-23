@@ -39,7 +39,7 @@ __global__ void calculateBoundaries(double* A1, double* anew1, int n, int sizegr
 //calculate error
 __global__ void error(double * A1, double *anew1 , double * res, int n, int sizegroup){
 	int j = blockIdx.x * blockDim.x + threadIdx.x;
-    int i = blockIdx.y * blockDim.y + threadIdx.y;
+    	int i = blockIdx.y * blockDim.y + threadIdx.y;
 	int idx = i * n + j; //find index
 	if(!(j == 0 || i == 0 || j == n - 1 || i == sizegroup - 1)){
 		res[idx] = fabs(anew1[idx]-A1[idx]);
