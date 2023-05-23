@@ -171,8 +171,7 @@ int main(int argc, char** argv) {
 	//main algorithm
 	for (iter = 0; iter < iter_max && err>accuracy; iter++) {
 		// Расчитываем границы, которые потом будем отправлять другим процессам
-		calculatebound<<<n, 1, 0, stream>>>(A1, anew1, 
-										n, sizeofArrayProcces);
+		calculatebound<<<n, 1, 0, stream>>>(A1, anew1, n, sizeofArrayProcces);
 		// ждём, пока закончим рассчитывать границы, чтобы иметь возвожность отправлять результаты расчётов границ
 		cudaStreamSynchronize(stream);
 		// Расчет матрицы
