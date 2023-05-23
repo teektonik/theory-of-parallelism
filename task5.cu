@@ -25,10 +25,8 @@ __global__ void calculatebound(double* A1, double* anew1, int n, int sizegroup)
 	if(idxUp < n)
 	{
 		/*sizegroup-2 - строка*/
-		anew1[1 * n + idxUp] = 0.25 * (A1[1 * n + idxUp - 1] + A1[(1 - 1) * n + idxUp] + \
-			A1[(1 + 1) * n + idxUp] + A1[1 * n + idxUp + 1]);
-		anew1[(sizegroup - 2) * n + idxDown] = 0.25 * (A1[(sizegroup - 2) * n + idxDown - 1] + A1[((sizegroup - 2) - 1) * n + idxDown] + \
-			A1[((sizegroup - 2) + 1) * n + idxDown] + A1[(sizegroup - 2) * n + idxDown + 1]);
+		anew1[1 * n + idxUp] = 0.25 * (A1[1 * n + idxUp - 1] + A1[(1 - 1) * n + idxUp] + A1[(1 + 1) * n + idxUp] + A1[1 * n + idxUp + 1]);
+		anew1[(sizegroup - 2) * n + idxDown] = 0.25 * (A1[(sizegroup - 2) * n + idxDown - 1] + A1[((sizegroup - 2) - 1) * n + idxDown] + A1[((sizegroup - 2) + 1) * n + idxDown] + A1[(sizegroup - 2) * n + idxDown + 1]);
 	}
 }
 
@@ -46,8 +44,7 @@ __global__ void compute(double * A1, double * anew1,int n, int sizegroup){
 	int j= blockIdx.x * blockDim.x + threadIdx.x;
     	int i = blockIdx.y * blockDim.y + threadIdx.y;
 	if(!(j < 1 || i < 2 || j > n - 2 || i > sizegroup - 2))
-		anew1[i * n + j] = 0.25 * (A1[i * n + j - 1] + A1[(i - 1) * n + j] + \
-			A1[(i + 1) * n + j] + A1[i * n + j + 1]);
+		anew1[i * n + j] = 0.25 * (A1[i * n + j - 1] + A1[(i - 1) * n + j] + A1[(i + 1) * n + j] + A1[i * n + j + 1]);
 }
 
 int findNearestPowerOfTwo(int num) {
