@@ -14,7 +14,7 @@
 #include <time.h>
 
 
-__global__ void calculateBoundaries(double* A1, double* anew1, int n, int sizegroup)
+__global__ void calculatebound(double* A1, double* anew1, int n, int sizegroup)
 {
 	//расчет границ
 	int idxUp = blockIdx.x * blockDim.x + threadIdx.x;
@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
 	//main algorithm
 	for (iter = 0; iter < iter_max && err>accuracy; iter++) {
 		// Расчитываем границы, которые потом будем отправлять другим процессам
-		calculateBoundaries<<<n, 1, 0, stream>>>(A1, anew1, 
+		calculatebound<<<n, 1, 0, stream>>>(A1, anew1, 
 										n, sizeofArrayProcces);
 		// ждём, пока закончим рассчитывать границы, чтобы иметь возвожность отправлять результаты расчётов границ
 		cudaStreamSynchronize(stream);
