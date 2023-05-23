@@ -17,16 +17,16 @@
 __global__ void calculatebound(double* A1, double* anew1, int n, int sizegroup)
 {
 	//расчет границ
-	int idxUp = blockIdx.x * blockDim.x + threadIdx.x;
-	int idxDown = blockIdx.x * blockDim.x + threadIdx.x;
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+	
 
-	if (idxUp == 0 || idxUp > n - 2) return;
+	if (i == 0 || i > n - 2) return;
 	
 	if(idxUp < n)
 	{
 		/*sizegroup-2 - строка*/
-		anew1[1 * n + idxUp] = 0.25 * (A1[1 * n + idxUp - 1] + A1[(1 - 1) * n + idxUp] + A1[(1 + 1) * n + idxUp] + A1[1 * n + idxUp + 1]);
-		anew1[(sizegroup - 2) * n + idxDown] = 0.25 * (A1[(sizegroup - 2) * n + idxDown - 1] + A1[((sizegroup - 2) - 1) * n + idxDown] + A1[((sizegroup - 2) + 1) * n + idxDown] + A1[(sizegroup - 2) * n + idxDown + 1]);
+		anew1[1 * n + i] = 0.25 * (A1[1 * n + i - 1] + A1[(1 - 1) * n + i] + A1[(1 + 1) * n + i] + A1[1 * n + i + 1]);
+		anew1[(sizegroup - 2) * n + i] = 0.25 * (A1[(sizegroup - 2) * n + i - 1] + A1[((sizegroup - 2) - 1) * n + i] + A1[((sizegroup - 2) + 1) * n + i] + A1[(sizegroup - 2) * n + i + 1]);
 	}
 }
 
