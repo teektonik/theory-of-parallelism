@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
 	double* err1 = 0;
 
 	// Расчитываем, сколько памяти требуется процессу
-    //необходимо знать границы предыдущего и следующего блоков, так как вычисления, по сути, идут крестиком.
+    	//необходимо знать границы предыдущего и следующего блоков, так как вычисления, по сути, идут крестиком.
 	if (rank != 0 && rank != size_group - 1)
 	{
 		sizeofArrayProcces += 2;
@@ -163,12 +163,12 @@ int main(int argc, char** argv) {
 	//кол-во потоков в процессе - кратно 32, ориентируясь на размер матрицы
 	int threads_x = min(findNearestPowerOfTwo(n), 1024);
 	//столько же, сколько строк в матрице
-    int blocks_y = sizeofArrayProcces ;
+    	int blocks_y = sizeofArrayProcces ;
 	//Если сетка меньше 1024, то блок - занимает всю строку матрицы, если больше, то часть строки
-    int blocks_x = n / threads_x;
+    	int blocks_x = n / threads_x;
 
-    dim3 blockDim(threads_x, 1); // кол-во потоков в блоке
-    dim3 gridDim(blocks_x, blocks_y); //кол-во блоков на сетке
+    	dim3 blockDim(threads_x, 1); // кол-во потоков в блоке
+    	dim3 gridDim(blocks_x, blocks_y); //кол-во блоков на сетке
 
 	//// t_memory = NULL, при первом вызове возвращает нужный размер, нужно выделить память, чтобы функция работала
 	cub::DeviceReduce::Max(t_memory, t_memory_size, tmp_arr, err1, n*sizeofArrayProcces);
