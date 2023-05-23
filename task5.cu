@@ -159,10 +159,15 @@ int main(int argc, char** argv) {
     	int blocks_y = sizeofArrayProcces ;
 	//Если сетка меньше 1024, то блок - занимает всю строку матрицы, если больше, то часть строки
     	int blocks_x = n / threads_x;
-
+	
     	dim3 blockDim(threads_x, 1); // кол-во потоков в блоке
     	dim3 gridDim(blocks_x, blocks_y); //кол-во блоков на сетке
-
+	int n1;
+	if (threads_x<1024)
+		n1= threads_x;
+	else
+		n1 = 1024;
+	
 	//// t_memory = NULL, при первом вызове возвращает нужный размер, нужно выделить память, чтобы функция работала
 	cub::DeviceReduce::Max(t_memory, t_memory_size, tmp_arr, err1, n*sizeofArrayProcces);
 	cudaMalloc((&t_memory), t_memory_size);
@@ -171,7 +176,7 @@ int main(int argc, char** argv) {
 	//main algorithm
 	for (iter = 0; iter < iter_max && err>accuracy; iter++) {
 		// Расчитываем границы, которые потом будем отправлять другим процессам
-		calculatebound<<<n, 1, 0, stream>>>(A1, anew1, n, sizeofArrayProcces);
+		calculatebound<<<n1, 1, 0, stream>>>(A1, anew1, n, sizeofArrayProcces);
 		// ждём, пока закончим рассчитывать границы, чтобы иметь возвожность отправлять результаты расчётов границ
 		cudaStreamSynchronize(stream);
 		// Расчет матрицы
