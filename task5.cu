@@ -221,6 +221,8 @@ int main(int argc, char** argv) {
 	cudaFree(anew1);
 	free(A);
 	free(anew);
+	cudaStreamDestroy(matrixCalculationStream);
+	cudaStreamDestroy(stream);
 	MPI_Finalize();
 	return 0;
 }
