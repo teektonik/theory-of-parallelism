@@ -22,7 +22,7 @@ __global__ void calculatebound(double* A1, double* anew1, int n, int sizegroup)
 
 	if (i == 0 || i > n - 2) return;
 	
-	if(idxUp < n)
+	if(i < n)
 	{
 		/*sizegroup-2 - строка*/
 		anew1[1 * n + i] = 0.25 * (A1[1 * n + i - 1] + A1[(1 - 1) * n + i] + A1[(1 + 1) * n + i] + A1[1 * n + i + 1]);
