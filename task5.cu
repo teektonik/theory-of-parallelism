@@ -14,10 +14,6 @@
 #include <time.h>
 
 
-#define CALCULATE(matrixA, matrixB, size, i, j) \
-	matrixB[i * size + j] = 0.25 * (matrixA[i * size + j - 1] + matrixA[(i - 1) * size + j] + \
-			matrixA[(i + 1) * size + j] + matrixA[i * size + j + 1]);	
-
 __global__ void calculateBoundaries(double* A1, double* anew1, int n, int sizegroup)
 {
 	//расчет границ
